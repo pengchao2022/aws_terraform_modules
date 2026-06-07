@@ -63,8 +63,5 @@ resource "aws_s3_bucket_policy" "public_read" {
       },
     ]
   })
-
-  # The policy must be applied after public_access_block
-  depends_on = [aws_s3_bucket.public_access_block.main]
   
 }
