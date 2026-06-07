@@ -52,7 +52,7 @@ resource "aws_s3_bucket_public_access_block" "main" {
 resource "aws_s3_bucket_policy" "public_read" {
   count  = var.enable_website ? 1 : 0 # only is s3 website then will create this policy
   bucket = aws_s3_bucket.main.id
-  policy = jsondecode({
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -65,6 +65,6 @@ resource "aws_s3_bucket_policy" "public_read" {
   })
 
   # The policy must be applied after public_access_block
-  depends_on = [ aws_s3_bucket.public_access_block.main ]
+  depends_on = [aws_s3_bucket.public_access_block.main]
   
 }
