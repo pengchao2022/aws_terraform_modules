@@ -32,3 +32,9 @@ variable "enable_website" {
   default = false
 }
 
+variable "enable_force_destroy" {
+  description = "Allow forced deletion of the S3 bucket (empty the data in the bucket)"
+  type        = bool
+  default     = false 
+}
+
