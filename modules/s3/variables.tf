@@ -24,3 +24,11 @@ variable "tags" {
     error_message = "all the tags value must be string"
   }
 }
+
+# if you want to make a s3 static website 
+variable "enable_website" {
+  description = "Set to true to enable static website hosting"
+  type        = bool
+  default = false
+}
+
