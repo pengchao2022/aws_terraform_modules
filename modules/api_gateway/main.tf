@@ -33,7 +33,10 @@ resource "aws_api_gateway_integration" "lambda" {
 
 # deploy API
 resource "aws_api_gateway_deployment" "this" {
-  depends_on = [ aws_api_gateway_integration.lambda ]
+  depends_on = [ 
+    aws_api_gateway_integration.lambda,
+    aws_api_gateway_integration.options
+  ]
   rest_api_id = aws_api_gateway_rest_api.this.id
   
   triggers = {
@@ -75,7 +78,7 @@ resource "aws_api_gateway_method" "options" {
 
 # response configure
 resource "aws_api_gateway_method_response" "option_200" {
-  rest_api_id = aws_api_gateway_deployment.this.id
+  rest_api_id = aws_api_gateway_rest_api.this.id 
   resource_id = aws_api_gateway_resource.visit.id
   http_method = aws_api_gateway_method.options.http_method
   status_code = "200"
@@ -84,5 +87,32 @@ resource "aws_api_gateway_method_response" "option_200" {
     "method.response.header.Access-Control-Allow-Methods" = true,
     "method.response.header.Access-Control-Allow-Headers" = true
   }
+}
+
+# OPTIONS method 
+resource "aws_api_gateway_integration" "options" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  resource_id = aws_api_gateway_resource.visit.id
+  http_method = aws_api_gateway_method.options.http_method
+  type        = "MOCK"
   
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+# OPTIONS response instergration
+resource "aws_api_gateway_integration_response" "options_200" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  resource_id = aws_api_gateway_resource.visit.id
+  http_method = aws_api_gateway_method.options.http_method
+  status_code = "200"
+  
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'",
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'",
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+  }
+  
+  depends_on = [aws_api_gateway_integration.options]
 }
