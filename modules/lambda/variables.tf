@@ -22,3 +22,8 @@ variable "source_file" {
   
 }
 
+variable "source_code_hash" {
+  description = "Base64-encoded representation of raw SHA-256 sum of the zip file"
+  type        = string
+  default     = null 
+}

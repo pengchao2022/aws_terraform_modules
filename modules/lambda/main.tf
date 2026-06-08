@@ -12,6 +12,8 @@ resource "aws_lambda_function" "this" {
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.9"
 
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
   environment {
     variables = { TABLE_NAME = var.table_name }
   }
