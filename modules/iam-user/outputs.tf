@@ -10,6 +10,12 @@ output "username" {
 
 }
 
+output "user_arn" {
+  description = "the arn of the IAM user"
+  value = aws_iam_user.user.arn
+  
+}
+
 output "access_key_id" {
   description = "IAM user access Key ID"
   value = aws_iam_access_key.user_key.id  
