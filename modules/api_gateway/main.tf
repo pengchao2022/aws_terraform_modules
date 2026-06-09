@@ -54,6 +54,24 @@ resource "aws_api_gateway_stage" "prod" {
   deployment_id = aws_api_gateway_deployment.this.id
   rest_api_id = aws_api_gateway_rest_api.this.id
   stage_name = "prod"
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_logs.arn
+
+    format = jsonencode({
+      requestId    = "$context.requestId"
+      ip           = "$context.identity.sourceIp"
+      caller       = "$context.identity.caller"
+      user         = "$context.identity.user"
+      requestTime  = "$context.requestTime"
+      httpMethod   = "$context.httpMethod"
+      resourcePath = "$context.resourcePath"
+      status       = "$context.status"
+      protocol     = "$context.protocol"
+      responseLength = "$context.responseLength"
+    })
+
+  }
   
 }
 
@@ -65,6 +83,38 @@ resource "aws_lambda_permission" "apigw" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.this.execution_arn}/*/*"  
 }
+
+# create API Gateway Cloudwatch role if you need cloudwatch to monitor
+resource "aws_iam_role" "api_gateway_cloudwatch_role" {
+  name               = "api_gateway_cloudwatch_role"
+  assume_role_policy = jsonencode({
+    Version  = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = { Service = "apigateway.amazonaws.com" }
+    }]
+  })
+  
+}
+
+resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch_logs" {
+  role       = aws_iam_role.api_gateway_cloudwatch_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+  
+}
+
+# bind API Gateway to account level
+resource "aws_api_gateway_account" "this" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn  
+}
+
+resource "aws_cloudwatch_log_group" "api_logs" {
+  name              = "/aws/api-gateway/${var.api_name}"
+  retention_in_days = 7
+}
+
+
 
 # added OPTIONS method
 resource "aws_api_gateway_method" "options" {
