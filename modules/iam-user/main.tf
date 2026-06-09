@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 
 # ensure that group_names contains all groups the user belongs to
 locals {
-  group_names = toset([for user in var.iam_users : user.group])
+  group_names = toset(flatten([for user in var.iam_users : user.groups]))
 }
 
 resource "aws_iam_group" "groups" {
@@ -29,7 +29,9 @@ resource "aws_iam_user_login_profile" "user_profiles" {
 resource "aws_iam_user_group_membership" "memberships" {
   for_each = var.iam_users
   user     = aws_iam_user.users[each.key].name
-  groups   = [aws_iam_group.groups[each.value.group].name]
+  groups   = each.value.groups
+
+  depends_on = [aws_iam_group.groups]
 }
 
 resource "aws_iam_group_policy_attachment" "dynamic_attach" {
