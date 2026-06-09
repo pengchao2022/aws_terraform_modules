@@ -1,14 +1,14 @@
 variable "iam_users" {
   description = "IAM users list and groups belonged {username = { group = 'group_name' }}"
   type        = map(object({
-    group = string
+    groups = list(string) # allow one use to join multiple groups
   }))
 
   # structure examples:
   # {
-  #   "alice" = { group = "devops" }
-  #   "bob"   = { group = "devs" }
-  #   "sean"  = { group = "sre" }
+  #   "alice" = { groups = ["devops", "sre"] }
+  #   "bob"   = { groups = ["developers"] }
+  #   "sean"  = { groups = ["sre", "developers"] }
   # }
 }
 
