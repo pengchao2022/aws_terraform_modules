@@ -15,3 +15,9 @@ variable "lambda_function_name" {
   type        = string
   
 }
+
+variable "create_iam_resources" {
+  description = "Set to true to create the API Gateway CloudWatch role and account settings. Set to false if already managed elsewhere."
+  type        = bool
+  default     = false
+}
