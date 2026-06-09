@@ -1,7 +1,7 @@
-# 1. Identity
+# get the current aws account ID
 data "aws_caller_identity" "current" {}
 
-# 2. 组逻辑：确保 group_names 包含所有用户所属组
+# ensure that group_names contains all groups the user belongs to
 locals {
   group_names = toset([for user in var.iam_users : user.group])
 }
@@ -11,37 +11,27 @@ resource "aws_iam_group" "groups" {
   name     = each.value
 }
 
-# 3. 用户逻辑
+# create iam users
 resource "aws_iam_user" "users" {
   for_each = var.iam_users
   name     = each.key
 }
 
-# 4. 登录资料：修复后的三元运算符写法
+# create user profiles 
 resource "aws_iam_user_login_profile" "user_profiles" {
   for_each                = var.create_login_profile ? var.iam_users : {}
   user                    = aws_iam_user.users[each.key].name
   pgp_key                 = var.pgp_key
-  password_reset_required = true
+  password_reset_required = true  # user need to modify password on their first login
 }
 
-# 5. 组成员关系
+# group memberships
 resource "aws_iam_user_group_membership" "memberships" {
   for_each = var.iam_users
   user     = aws_iam_user.users[each.key].name
-  groups   = [each.value.group]
-  
-  # 显式声明依赖，防止资源创建顺序冲突
-  depends_on = [aws_iam_group.groups]
+  groups   = [aws_iam_group.groups[each.value.group].name]
 }
 
-# 6. 密钥
-resource "aws_iam_access_key" "user_keys" {
-  for_each = var.iam_users
-  user     = aws_iam_user.users[each.key].name
-}
-
-# 7. 策略绑定：增加判断，防止 Key 不匹配
 resource "aws_iam_group_policy_attachment" "dynamic_attach" {
   for_each   = { for k, v in var.group_policies : k => v if contains(local.group_names, k) }
   group      = aws_iam_group.groups[each.key].name

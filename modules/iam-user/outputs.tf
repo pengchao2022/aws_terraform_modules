@@ -1,18 +1,18 @@
-# 1. 统一输出 AWS 登录所需的 URL
+# aws console login url
 output "aws_console_login_url" {
-  description = "IAM 用户登录控制台的标准 URL"
+  description = "The URL for IAM user to login aws console"
   value       = "https://${data.aws_caller_identity.current.account_id}.signin.aws.amazon.com/console"
 }
 
-# 2. 输出 Account ID (截图里的第一项)
+# aws_account_id e.g. "317429619308"
 output "aws_account_id" {
-  description = "用于 AWS 登录的 Account ID"
+  description = "The AWS login Account ID"
   value       = data.aws_caller_identity.current.account_id
 }
 
-# 3. 仅输出用户登录凭证 (不包含 Secret Access Key)
+# user login credentials info
 output "iam_users_login_info" {
-  description = "IAM 用户登录控制台的标准凭证"
+  description = "IAM uesrs credentials when login aws console"
   sensitive   = true 
   value = {
     for name, user in aws_iam_user.users : name => {
