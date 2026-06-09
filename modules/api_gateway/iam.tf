@@ -1,4 +1,4 @@
-# IAM Role: API Gateway 使用的角色
+# create iam role for API Gateway
 resource "aws_iam_role" "api_gateway_cloudwatch_role" {
   count = var.create_iam_resources ? 1 : 0
   name  = "api_gateway_cloudwatch_role"
@@ -13,18 +13,16 @@ resource "aws_iam_role" "api_gateway_cloudwatch_role" {
   })
 }
 
-# IAM Policy Attachment: 赋予角色写入 CloudWatch Logs 的权限
+# IAM Policy Attachment give api gateway to write to cloudwatch permission
 resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch_logs" {
   count      = var.create_iam_resources ? 1 : 0
   role       = aws_iam_role.api_gateway_cloudwatch_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
 }
 
-# Account Level Config: 绑定 API Gateway 账号与角色
+# bind account and role 
 resource "aws_api_gateway_account" "this" {
   count               = var.create_iam_resources ? 1 : 0
   cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role[0].arn
-
-  # 确保在创建账号设置前，IAM 角色和策略已准备就绪
   depends_on = [aws_iam_role_policy_attachment.api_gateway_cloudwatch_logs]
 }
