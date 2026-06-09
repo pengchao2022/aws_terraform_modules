@@ -1,14 +1,29 @@
-variable "ima_user_name" {
-  description = "The name of IAM user"
-  type        = string
+variable "iam_users" {
+  description = "IAM users list and groups belonged {username = { group = 'group_name' }}"
+  type        = map(object({
+    group = string
+  }))
+
+  # structure examples:
+  # {
+  #   "alice" = { group = "devops" }
+  #   "bob"   = { group = "devs" }
+  #   "sean"  = { group = "sre" }
+  # }
 }
 
-variable "iam_group_name" {
-  description = "The group of this IAM user belong"
-  type        = string
-  default     = "devops"
+variable "group_policies" {
+  description = "define the group name map with the policy ARN"
+  type        = map(string)
+  default = {
+    "devops"     = "arn:aws:iam::aws:policy/AdministratorAccess"
+    "devs"       = "arn:aws:iam::aws:policy/PowerUserAccess"
+    "sre"        = "arn:aws:iam::aws:policy/PowerUserAccess"
+    "readonly"   = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+  }
+  
 }
-
+  
 variable "pgp_key" {
   description = "The PGP public key or keybase:username used to encrypt the console password"
   type        = string
